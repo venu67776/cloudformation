@@ -13,7 +13,7 @@ password=venu@1234
 
 echo "Creating stack..."
 STACK_ID=$( \
-  aws cloudformation deploy \
+  aws cloudformation create-stack \
   --stack-name ${STACK_NAME} \
   --template-file file://${DIR}/new2.yaml \
   --capabilities CAPABILITY_NAMED_IAM \
