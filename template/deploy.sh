@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 STACK_NAME=$1
 PASSWORD=$2
