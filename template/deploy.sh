@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 STACK_NAME=$1
+PASSWORD=$2
 
 if [ -z "$1" ]
   then
@@ -19,6 +20,7 @@ STACK_ID=$( \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameters ParameterKey=Username,ParameterValue=venu-aws \
     	ParameterKey=Bucketname,ParameterValue=venuvenu \
-      ParameterKey=Password,ParameterValue=venu@12345
+      ParameterKey=Password,ParameterValue=${PASSWORD}
     
 )
+
