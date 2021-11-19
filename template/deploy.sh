@@ -19,6 +19,6 @@ STACK_ID=$( \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameters ParameterKey=Username,ParameterValue=venu-aws \
     	ParameterKey=Bucketname,ParameterValue=venuvenu \
-      ParameterKey=Password,ParameterValue=venu@1234
+      ParameterKey=Password,ParameterValue=venu@12345
     
 )
