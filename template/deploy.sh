@@ -20,12 +20,10 @@ STACK_ID=$( \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameters ParameterKey=Username,ParameterValue=venu-aws \
     	ParameterKey=Bucketname,ParameterValue=venuvenu \
-      ParameterKey=Password,ParameterValue=${PASSWORD} \
-      | jq -r .StackId \
+      ParameterKey=Password,ParameterValue=${PASSWORD} 
     
 )
 
-echo "Waiting on ${STACK_ID} create completion..."
-aws cloudformation wait stack-create-complete --stack-name ${STACK_ID}
+
 
 
