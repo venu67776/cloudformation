@@ -21,5 +21,4 @@ STACK_ID=$( \
     	ParameterKey=Bucketname,ParameterValue=venuvenu \
       ParameterKey=Password,ParameterValue=${password} 
     
-
 )
