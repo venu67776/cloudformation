@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating a s3 bucket
+
+Parameters:
+  Bucketname:
+    Type: String
+    Description: Enter Bucket name
+    Default: ''
+
+  Password:
+    Type: String
+    Description: Please enter a password 
+    NoEcho: true
+
+  VersioningConfiguration:
+    Type: String
+    Default: Enabled
+    AllowedValues:
+     - "Enabled"
+     - "Suspended"
+
+  PasswordResetRequired:
+    Type: String
+    Default: 'true'
+    AllowedValues: 
+    - "true"
+    - "false"
+
+  Username:
+    Type: String
+    Description: Please enter a Username 
+    Default: ''
+
+  Groupname:
+    Type: String
+    Description: enter group name
+    Default: ''
+
+Resources:
+  Assets:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref Bucketname
+      VersioningConfiguration:
+        Status: !Ref VersioningConfiguration
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false 
+        BlockPublicPolicy: false  
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+
+  RootRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-role'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: 
+              AWS:
+                - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: 
+             - "sts:AssumeRole"
+      Path: /
+
+  MyPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-policy'
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+         - Effect: Allow
+           Action:
+            - "s3:ListAllMyBuckets"       
+           Resource: arn:aws:s3:::*
+         - Effect: Allow 
+           Action:
+            - "s3:GetObject"
+            - "s3:PutObject"
+            - "s3:ListBucket"
+           Resource:
+             - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname"]]
+             - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname", "/*" ]]
+      Roles:
+        - !Ref RootRole
+
+  User:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref Username
+      LoginProfile:
+        Password: !Ref Password
+        PasswordResetRequired: !Ref PasswordResetRequired
+      Groups: 
+        - !Ref Group
+      Policies: 
+        - PolicyName: Iamchangepassword-policy
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement: 
+              - Effect: Allow
+                Action:
+                  - 'iam:ChangePassword'
+                Resource: 
+                  - "arn:aws:iam::${AWS::AccountId}:user/${aws:username}"
+
+  Group:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName:  !Ref Groupname
+      Policies:
+        - PolicyName: !Sub '${AWS::StackName}-AssumeRole'
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+               - Effect: Allow
+                 Action:
+                    - 'sts:AssumeRole'
+                 Resource:
+                   - !GetAtt RootRole.Arn
+
+  SampleBucketPolicy:
+   Type: AWS::S3::BucketPolicy
+   Properties:
+    Bucket: !Ref Bucketname
+    PolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+      - Effect: Allow 
+        Action:
+        - "s3:GetObject"
+        - "s3:PutObject"
+        - "s3:ListBucket"
+        - "s3:DeleteObject"
+        Resource: 
+            - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname"]]
+            - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname", "/*" ]]
+        Principal: 
+           AWS:
+            - !GetAtt User.Arn
+            
+
+Outputs:
+  UserName: 
+    Description: The UserName associated with the IAM User account
+    Value: !Ref User
+
+  UserARN:
+    Description: The ARN associated with the IAM User account
+    Value: !GetAtt User.Arn
+
+  RoleARN:
+    Description: The ARN associated with the IAM User account
+    Value: !GetAtt RootRole.Arn
+
+  Bucketname: 
+    Description: name of the Bucketname 
+    Value: !Ref Bucketname
+  
+  BucketARN:
+    Description: The bucketARN associated with bucket
+    Value: !GetAtt Assets.Arn

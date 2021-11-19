@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 
-Description: Creating a VPC with 2 public and 4 private subnets(2 subnets for app and 2 subnets for database)
+Description: Creating a VPC with 2 public and 4 private subnets(2 subnets for app servers and 2 subnets for database)
+
 
 Parameters:
   VpcCIDR:
@@ -161,7 +162,7 @@ Resources:
       SubnetId: !Ref PublicSubnetA
       Tags:
       - Key: Name
-        Value: !Sub NAT1-${AWS::StackName}
+        Value: !Sub ${AWS::StackName}-NAT1
   
   NATGateway2:
     Type: AWS::EC2::NatGateway
@@ -170,7 +171,7 @@ Resources:
       SubnetId: !Ref PublicSubnetB
       Tags:
       - Key: Name
-        Value: !Sub NAT2-${AWS::StackName}
+        Value: !Sub ${AWS::StackName}-NAT2-
 
   PrivateRouteTable1:
     Type: AWS::EC2::RouteTable
@@ -178,7 +179,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub ${AWS::StackName}-private-routetable
+        Value: !Sub ${AWS::StackName}-privateroutetable-1
   PrivateRoutetointernet0:
     Type: AWS::EC2::Route
     Properties:
@@ -192,7 +193,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
       - Key: Name
-        Value: !Sub ${AWS::StackName}-private-routetable
+        Value: !Sub ${AWS::StackName}-privateroutetable-2
   PrivateRoutetointernet1:
     Type: AWS::EC2::Route
     Properties:
@@ -238,42 +239,42 @@ Resources:
 
 Outputs:
   VPC:
-    Description: A reference to the created VPC
+    Description:   created VPC
     Value:  !Ref VPC
     Export:
       Name: !Sub "${AWS::StackName}-VPC"
 
   PublicSubnetA:
-    Description: A reference to the public subnet in the 1st Availability Zone
+    Description: public subnet in the 1st Availability Zone
     Value: !Ref  PublicSubnetA
     Export:
       Name: !Sub ${AWS::StackName}-publicsubnet-a
   PublicSubnetB:
-    Description: A reference to the public subnet in the 2nd Availability Zone
+    Description:   public subnet in the 2nd Availability Zone
     Value: !Ref  PublicSubnetA
     Export:
       Name: !Sub ${AWS::StackName}-publicsubnet-b
 
   PrivateSubnetA:
-    Description: A reference to the private subnet in the 1st Availability Zone
+    Description: private subnet in the 1st Availability Zone
     Value: !Ref  PrivateSubnetA
     Export:
       Name: !Sub ${AWS::StackName}-privatesubnet-a
 
   PrivateSubnetB:
-    Description: A reference to the private subnet in the 2nd Availability Zone
+    Description:   private subnet in the 2nd Availability Zone
     Value: !Ref  PrivateSubnetB
     Export:
       Name: !Sub ${AWS::StackName}-privatesubnet-b
 
   PrivateSubnetC:
-    Description: A reference to the private subnet in the 1st Availability Zone
+    Description:   private subnet in the 1st Availability Zone
     Value: !Ref  PrivateSubnetC
     Export:
       Name: !Sub ${AWS::StackName}-privatesubnet-c
 
   PrivateSubnetD:
-    Description: A reference to the private subnet in the 2st Availability Zone
+    Description:   private subnet in the 2st Availability Zone
     Value: !Ref  PrivateSubnetD
     Export:
       Name: !Sub ${AWS::StackName}-privatesubnet-d
@@ -296,3 +297,20 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-PrivateRouteTable2
 
+  InternetGateway:
+    Description: Internetgateway ID
+    Value: !Ref  InternetGateway
+    Export:
+      Name: !Sub ${AWS::StackName}-InternetGateway
+
+  NATGateway1:
+    Description: NATGateway1 ID
+    Value: !Ref  NATGateway1
+    Export:
+      Name: !Sub ${AWS::StackName}-NATGateway1
+
+  NATGateway2:
+    Description: NATGateway2 ID
+    Value: !Ref  NATGateway2
+    Export:
+      Name: !Sub ${AWS::StackName}-NATGateway2

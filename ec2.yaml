@@ -1,0 +1,142 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating a ec2 instance
+
+Parameters:
+  VPCStackName:
+    Description: Name of the base VPC stack
+    Type: String
+    Default: vpc
+
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: ''
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
+
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - t2.large
+
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    Default: 0.0.0.0/0
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x
+
+Mappings:
+  AWSInstanceType2Arch: 
+    t2.nano:
+      Arch: HVM64
+    t2.micro:
+      Arch: HVM64
+    t2.small:
+      Arch: HVM64
+    t2.medium:
+      Arch: HVM64
+    t2.large:
+      Arch: HVM64
+
+  AWSRegionArch2AMI:
+    us-east-1:
+      PV64: ami-2a69aa47
+      HVM64: ami-01cc34ab2709337aa
+      HVMG2: ami-22b68b59
+    us-east-2:
+      PV64: NOT_SUPPORTED
+      HVM64: ami-0629230e074c580f2  
+      HVMG2: NOT_SUPPORTED
+    
+Resources:
+  # EC2 instance which will have access for http and ssh
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      SubnetId:
+        Fn::ImportValue: !Sub ${VPCStackName}-publicsubnet-a   
+      SecurityGroupIds: 
+        - !GetAtt InstanceSecurityGroup.GroupId 
+      # KeyName: !ref KeyPairName
+      KeyName:
+        Ref: KeyName
+      ImageId:
+        Fn::FindInMap:
+        - AWSRegionArch2AMI
+        - Ref: AWS::Region
+        - Fn::FindInMap:
+          - AWSInstanceType2Arch
+          - Ref: InstanceType
+          - Arch
+      UserData: 
+        Fn::Base64: |
+          #!/bin/bash -xe
+          yum update -y
+          yum install -y httpd.x86_64
+          systemctl start httpd.service
+          systemctl enable httpd.service
+          echo “Hello World ” > /var/www/html/index.html 
+
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-demo
+
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access via port 22 and http via 80
+      VpcId: 
+        Fn::ImportValue: !Sub "${VPCStackName}-VPC"
+      SecurityGroupIngress:
+      #allow ssh
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp:
+            Ref: SSHLocation
+      #allow http
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp:
+            Ref: SSHLocation
+      Tags: 
+       - Key: Name
+         Value: InstanceSecurityGroup
+
+
+Outputs:
+  InstanceId:
+    Description: InstanceId of the first EC2 instance
+    Value: !Ref EC2Instance
+    Export:
+      Name: !Sub ${AWS::StackName}-name
+
+  PublicDNS:
+    Description: Public DNS Name of the EC2 instance
+    Value: !GetAtt 
+      - EC2Instance
+      - PublicDnsName
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicDnsName
+
+  PublicIP:
+    Description: Public IP address of the EC2 instance
+    Value: !GetAtt 
+      - EC2Instance
+      - PublicIp
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicIP
+  
+  SecurityGroup:
+    Description: Security group Id
+    Value:  !GetAtt InstanceSecurityGroup.GroupId
+    Export:
+      Name: !Sub ${AWS::StackName}-SecurityGroup

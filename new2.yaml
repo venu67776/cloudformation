@@ -1,0 +1,124 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating a s3 bucket
+
+Parameters:
+  Bucketname:
+    Type: String
+    Description: Enter Bucket name
+    Default: ''
+  
+  Password:
+    Type: String
+    Description: Enter password
+    Default: ''
+
+  PasswordResetRequired:
+    Type: String
+    Default: 'true'
+    AllowedValues: 
+    - "true"
+    - "false"
+
+  Username:
+    Type: String
+    Description: Please enter a Username 
+    Default: ''
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref Bucketname
+
+  User:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref Username
+      LoginProfile:
+        Password: !Ref Password
+        PasswordResetRequired: !Ref PasswordResetRequired
+      Policies: 
+        - PolicyName: Iamchangepassword-policy
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement: 
+              - Effect: Allow
+                Action:
+                  - 'iam:ChangePassword'
+                Resource: 
+                 -  "arn:aws:iam::*:user/${aws:username}"
+  
+  keys:
+   Type: AWS::IAM::AccessKey
+   Properties:   
+     UserName: !Ref User
+     
+  MyPolicy:
+   Type: 'AWS::IAM::Policy'
+   Properties:
+    PolicyName: !Sub '${AWS::StackName}-policy'
+    PolicyDocument:
+     Version: "2012-10-17"
+     Statement:
+      - Effect: Allow
+        Action:
+          - 's3:ListAllMyBuckets'
+        Resource: arn:aws:s3:::*
+      - Effect: Allow
+        Action:
+          - 's3:GetObject'
+          - 's3:PutObject'
+          - 's3:ListBucket'
+        Resource:
+             - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname"]]
+             - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname", "/*" ]]
+    Users: 
+      - !Ref User
+
+  SampleBucketPolicy:
+   Type: AWS::S3::BucketPolicy
+   Properties:
+    Bucket: !Ref Bucketname
+    PolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Action:
+            - 's3:GetObject'
+            - 's3:PutObject'
+            - 's3:ListBucket'
+          Resource:
+             - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname"]]
+             - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname", "/*" ]] 
+          Principal: 
+           AWS:
+            - !GetAtt User.Arn
+
+
+Outputs:
+  AccessKey:
+    Description: AWSAccessKeyId of  user
+    Value: !Ref 'keys'
+    
+  SecretKey:
+    Description: AWSSecretAccessKey of  user
+    Value: !GetAtt [keys, SecretAccessKey]
+    
+
+  UserName: 
+    Description: The UserName associated with the IAM User account
+    Value: !Ref User
+
+  UserARN:
+    Description: The ARN associated with the IAM User account
+    Value: !GetAtt User.Arn
+
+
+  Bucketname: 
+    Description: name of the Bucketname 
+    Value: !Ref Bucketname
+  
+  BucketARN:
+    Description: The bucketARN associated with bucket
+    Value: !GetAtt S3Bucket.Arn

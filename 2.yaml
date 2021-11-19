@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating a s3 bucket
+
+Parameters:
+  Username:
+    Type: String
+    Description: Please enter a Username 
+    Default: ''
+
+  Groupname:
+    Type: String
+    Description: enter group name
+    Default: ''
+    
+Resources:
+  User:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref Username
+      LoginProfile:
+        Password: Pa$$word
+      Groups: 
+        - !Ref Group
+      
+
+  Group:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName:  !Ref Groupname

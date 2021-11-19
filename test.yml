@@ -1,0 +1,153 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating a s3 bucket
+
+Parameters:
+  Bucketname:
+    Type: String
+    Description: Enter Bucket name
+    Default: ''
+
+  Password:
+    Type: String
+    Description: Please enter a password 
+    NoEcho: true
+
+  VersioningConfiguration:
+    Type: String
+    Default: Enabled
+    AllowedValues:
+     - "Enabled"
+     - "Suspended"
+
+  PasswordResetRequired:
+    Type: String
+    Default: 'true'
+    AllowedValues: 
+    - "true"
+    - "false"
+
+  Username:
+    Type: String
+    Description: Please enter a Username 
+    Default: ''
+
+  Groupname:
+    Type: String
+    Description: enter group name
+    Default: ''
+
+Resources:
+  Assets:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref Bucketname
+      VersioningConfiguration:
+        Status: !Ref VersioningConfiguration
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false 
+        BlockPublicPolicy: false  
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+
+  RootRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-role'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::488617992296:root
+            Action: sts:AssumeRole
+      Path: /
+
+    
+  MyPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-policy'
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+         - Effect: Allow
+           Action:
+            - "s3:ListAllMyBuckets"       
+           Resource: arn:aws:s3:::*
+         - Effect: Allow 
+           Action:
+            - "s3:GetObject"
+            - "s3:PutObject"
+            - "s3:ListBucket"
+            - "sts:AssumeRole"
+           Resource:
+             - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname"]]
+             - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname", "/*" ]]
+      Roles:
+        - !Ref RootRole
+
+  MyassumePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Sub '${AWS::StackName}-assumegrouppolicy'
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+         - Effect: Allow
+           Action:
+            - "sts:AssumeRole"
+           Resource:
+              - !GetAtt RootRole.Arn
+      Groups:
+        - !Ref Group
+
+    
+  
+  User:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref Username
+      LoginProfile:
+        Password: !Ref Password
+        PasswordResetRequired: !Ref PasswordResetRequired
+      Groups: 
+        - !Ref Group
+      Policies: 
+        - PolicyName: Iamchangepassword-policy
+          PolicyDocument: 
+            Version: '2012-10-17'
+            Statement: 
+              - Effect: Allow
+                Action:
+                  - 'iam:ChangePassword'
+                Resource: 
+                 - '*'
+
+  Group:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName:  !Ref Groupname
+
+  
+  SampleBucketPolicy:
+   Type: AWS::S3::BucketPolicy
+   Properties:
+    Bucket: !Ref Bucketname
+    PolicyDocument:
+      Version: 2012-10-17
+      Statement:
+      - Effect: Allow 
+        Action:
+        - "s3:GetObject"
+        - "s3:PutObject"
+        - "s3:ListBucket"
+        Resource: 
+            - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname"]]
+            - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname", "/*" ]]
+        Principal: '*'

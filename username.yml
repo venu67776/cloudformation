@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating a s3 bucket
+
+Parameters:
+  Password:
+    Type: String
+    Description: Please enter a password 
+    NoEcho: true
+
+  PasswordResetRequired:
+    Type: String
+    Description: Do you want to require users to create a new password on first login?
+    ConstraintDescription: Must be a boolean value of true or false
+    AllowedValues: 
+    - "true"
+    - "false"
+
+  Username:
+    Type: String
+    Description: Please enter a Username 
+    Default: ''
+
+Resources:
+  User:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref Username
+      LoginProfile:
+        Password: !Ref Password
+        PasswordResetRequired: !Ref PasswordResetRequired

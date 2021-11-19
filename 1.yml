@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating a s3 bucket
+
+Parameters:
+  Bucketname:
+    Type: String
+    Description: "The prefix used for all S3 buckets."
+    Default: ''
+
+  RuleName:
+    Type: String
+    Description: "The rule name"
+    Default: s3
+
+  UserName:
+    Type: String
+    Description: Would you like to define a UserName for the IAM User?
+    Default: ""
+
+  Password:
+    Type: String
+    Description: Please enter a password 
+    ConstraintDescription: Password must be between 8 and 32 characters, start with lowercase or uppercase letter, and can be alphanumeric with the following special characters !@#$%& 
+    NoEcho: true
+    AllowedPattern: ^[a-zA-Z][a-zA-Z0-9!@#$%&]{8,32}$
+  
+  PasswordResetRequired:
+    Type: String
+    Description: Do you want to require users to create a new password on first login?
+    ConstraintDescription: Must be a boolean value of true or false
+    Default: true
+    AllowedValues: 
+    - "true"
+    - "false"
+
+  
+  
+Resources:
+  Assets:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${Bucketname}-assets"
+
+  user:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref "AWS::NoValue"
+      LoginProfile:
+        Password: !Ref Password
+        PasswordResetRequired: !Ref PasswordResetRequired
+   # ManagedPolicyArns:
+
+  CFNKeys:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref 'user'
+
+  Role:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub '${RuleName}-Role'
+      Path: "/"     
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: 
+              Service: 
+                - "s3.amazonaws.com"
+          Action: sts:AssumeRole  
+       
+  RolePolicies:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub '${RuleName}-policy'
+      Roles:
+        - Ref: "Role"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:       
+        - Effect: Allow
+          Action:
+          - "s3:GetBucketLocation"
+          - "s3:ListAllMyBuckets"       
+          Resource: arn:aws:s3:::*
+        - Effect: Allow 
+          Action:
+          - "s3:*"
+          Resource:
+              - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname", "-assets" ]]
+              - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname", "-assets/*" ]]       
+Outputs:
+  AccessKey:
+    Value: !Ref 'CFNKeys'
+    Description: AWSAccessKeyId of new user
+  SecretKey:
+    Value: !GetAtt [CFNKeys, SecretAccessKey]
+    Description: AWSSecretAccessKey of new user     
+
+    #https://github.com/1Strategy/iam-starter-templates/blob/master/iam-users/iam-user.yaml
