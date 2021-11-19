@@ -8,13 +8,13 @@ if [ -z "$1" ]
     exit 1
 fi
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DIR="$(cd "$(dirname "${template[0]}")" && pwd)"
 
 echo "Creating stack..."
 STACK_ID=$( \
   aws cloudformation create-stack \
   --stack-name ${STACK_NAME} \
-  --template-body file://${DIR}/cron-batch-stack.yml \
-  --capabilities CAPABILITY_IAM \
+  --template-body file://${DIR}/new2.yaml \
+  --capabilities CAPABILITY_NAMED_IAM \
 
 )
