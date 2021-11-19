@@ -9,7 +9,7 @@ if [ -z "$1" ]
     exit 1
 fi
 
-DIR="$(cd "$(dirname "${template[0]}")" && pwd)"
+DIR="$(cd $(dirname $BASH_SOURCE) && pwd)"
 
 
 echo "Creating stack..."
@@ -23,4 +23,8 @@ STACK_ID=$( \
       ParameterKey=Password,ParameterValue=${PASSWORD}
     
 )
+
+echo "Waiting on ${STACK_ID} create completion..."
+aws cloudformation wait stack-create-complete --stack-name ${STACK_ID}
+
 
