@@ -9,7 +9,7 @@ if [ -z "$1" ]
 fi
 
 DIR="$(cd "$(dirname "${template[0]}")" && pwd)"
-password=venu@1234
+
 
 echo "Creating stack..."
 STACK_ID=$( \
@@ -19,6 +19,6 @@ STACK_ID=$( \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameters ParameterKey=Username,ParameterValue=venu-aws \
     	ParameterKey=Bucketname,ParameterValue=venuvenu \
-      ParameterKey=Password,ParameterValue=${password} 
+      ParameterKey=Password,ParameterValue=venu@1234
     
 )
