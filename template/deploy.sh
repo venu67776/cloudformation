@@ -20,7 +20,8 @@ STACK_ID=$( \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameters ParameterKey=Username,ParameterValue=venu-aws \
     	ParameterKey=Bucketname,ParameterValue=venuvenu \
-      ParameterKey=Password,ParameterValue=${PASSWORD}
+      ParameterKey=Password,ParameterValue=${PASSWORD} \
+      | jq -r .StackId \
     
 )
 
