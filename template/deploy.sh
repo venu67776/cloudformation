@@ -16,5 +16,9 @@ STACK_ID=$( \
   --stack-name ${STACK_NAME} \
   --template-body file://${DIR}/new2.yaml \
   --capabilities CAPABILITY_NAMED_IAM \
+  --parameters ParameterKey=Username,ParameterValue=venu-aws \
+    	ParameterKey=Bucketname,ParameterValue=venuvenu \
+      ParameterKey=password,ParameterValue=venu@1234 
+    
 
 )
