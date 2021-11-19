@@ -15,7 +15,7 @@ echo "Creating stack..."
 STACK_ID=$( \
   aws cloudformation create-stack \
   --stack-name ${STACK_NAME} \
-  --template-file file://${DIR}/new2.yaml \
+  --template-body file://${DIR}/new2.yaml \
   --capabilities CAPABILITY_NAMED_IAM \
   --parameters ParameterKey=Username,ParameterValue=venu-aws \
     	ParameterKey=Bucketname,ParameterValue=venuvenu \
