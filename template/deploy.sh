@@ -12,7 +12,7 @@ DIR="$(cd "$(dirname "${template[0]}")" && pwd)"
 
 echo "Creating stack..."
 STACK_ID=$( \
-  aws cloudformation create-stack \
+  aws cloudformation deploy \
   --stack-name ${STACK_NAME} \
   --template-body file://${DIR}/new2.yaml \
   --capabilities CAPABILITY_NAMED_IAM \
