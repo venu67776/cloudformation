@@ -5,7 +5,7 @@ PASSWORD=$2
 
 if [ -z "$1" ]
   then
-    echo "No STACK_NAME argument supplied"
+    echo "No STACK_NAME argument"
     exit 1
 fi
 
