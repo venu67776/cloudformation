@@ -13,7 +13,6 @@ DIR="$(cd $(dirname $BASH_SOURCE) && pwd)"
 
 
 echo "Creating stack..."
-STACK_ID=$( \
   aws cloudformation create-stack \
   --stack-name ${STACK_NAME} \
   --template-body file://${DIR}/new2.yaml \
@@ -22,7 +21,6 @@ STACK_ID=$( \
     	ParameterKey=Bucketname,ParameterValue=venuvenu \
       ParameterKey=Password,ParameterValue=${PASSWORD} 
     
-)
 
 
 
