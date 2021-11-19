@@ -9,6 +9,7 @@ if [ -z "$1" ]
 fi
 
 DIR="$(cd "$(dirname "${template[0]}")" && pwd)"
+password=venu@1234
 
 echo "Creating stack..."
 STACK_ID=$( \
