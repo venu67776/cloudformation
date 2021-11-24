@@ -1,9 +1,7 @@
---parameters file://C:/Users/VENUGOPAL/Desktop/training/cloudformation_cf/env/core_svc_dev/parameters.json
-
 AWSTemplateFormatVersion: 2010-09-09
-
+​
 Description: Creating a s3 bucket
-
+​
 Parameters:
   Bucketname:
     Type: String
@@ -14,25 +12,25 @@ Parameters:
     Type: String
     Description: Enter password
     Default: ''
-
+​
   PasswordResetRequired:
     Type: String
     Default: 'true'
     AllowedValues: 
     - "true"
     - "false"
-
+​
   Username:
     Type: String
     Description: Please enter a Username 
     Default: ''
-
+​
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref Bucketname
-
+​
   User:
     Type: AWS::IAM::User
     Properties:
@@ -77,7 +75,7 @@ Resources:
              - !Join ["", ["arn:aws:s3:::", Ref: "Bucketname", "/*" ]]
     Users: 
       - !Ref User
-
+​
   SampleBucketPolicy:
    Type: AWS::S3::BucketPolicy
    Properties:
@@ -96,8 +94,8 @@ Resources:
           Principal: 
            AWS:
             - !GetAtt User.Arn
-
-
+​
+​
 Outputs:
   AccessKey:
     Description: AWSAccessKeyId of  user
@@ -107,16 +105,16 @@ Outputs:
     Description: AWSSecretAccessKey of  user
     Value: !GetAtt [keys, SecretAccessKey]
     
-
+​
   UserName: 
     Description: The UserName associated with the IAM User account
     Value: !Ref User
-
+​
   UserARN:
     Description: The ARN associated with the IAM User account
     Value: !GetAtt User.Arn
-
-
+​
+​
   Bucketname: 
     Description: name of the Bucketname 
     Value: !Ref Bucketname
