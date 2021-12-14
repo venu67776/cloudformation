@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+  
+Description: >-
+  Template allowing cross account S3 bucket access to copy objects from source account to destination S3 buckets.
+Parameters:
+  
+  DestinationS3BucketName:
+    Type: String
+    Description: >-
+      Name of the S3 Bucket that needs to be shared across accounts.
+    MinLength: 5
+    MaxLength: 64
+  SourceS3AccountId:
+    Description: >-
+      Source S3 Bucket AWS account ID.
+    Type: String
+    MinLength: 5
+    MaxLength: 16
+  SourceS3RoleName:
+    Description: >-
+      Source S3 Bucket Role Name.
+    Type: String
+    MinLength: 5
+    MaxLength: 16
+
+Resources:
+
+  DestinationBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DestinationS3BucketName
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS: 
+              - !Sub arn:aws:iam::${SourceS3AccountId}:role/${SourceS3RoleName}
+          Action:
+          - s3:PutObject
+          - s3:PutObjectAcl
+          Resource: 
+            - !Sub arn:aws:s3:::${DestinationS3BucketName}/*
+
+Outputs:
+  BuckePolicyArn:
+    Description: SourceS3Bucket-RoleArn
+    Value: !Ref DestinationBucketPolicy
